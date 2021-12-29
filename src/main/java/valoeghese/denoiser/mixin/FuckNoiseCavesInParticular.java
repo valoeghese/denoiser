@@ -48,30 +48,7 @@ public abstract class FuckNoiseCavesInParticular implements BiomeInfoAttacher {
 					blender);
 
 			if (baseSample != noCaveSample) { // only modify if we have to
-				int noCaveWeight = 0;
-				int totalWeight = 0;
-				final int sampleY = 310 >> 2;
-
-				final int searchRad = 3;
-				int qx = QuartPos.fromBlock(x);
-				int qz = QuartPos.fromBlock(z);
-
-				for (int xo = -searchRad; xo <= searchRad; ++xo) {
-					int totalX = xo + qx;
-
-					for (int zo = -searchRad; zo <= searchRad; ++zo) {
-						if (Denoiser.NO_NOISE_BIOMES.contains(
-								this.denoiser_registry.getKey(this.denoiser_biomesource.getNoiseBiome(totalX, sampleY, zo + qz, (Climate.Sampler) this))
-						)) {
-							++noCaveWeight;
-						}
-
-						++totalWeight;
-					}
-				}
-
-				double trueNoCaveWeight = (double) noCaveWeight / (double) totalWeight;
-				info.setReturnValue(noCaveSample * trueNoCaveWeight + baseSample * (1.0 - trueNoCaveWeight)); // transition
+				info.setReturnValue(Denoiser.denoised(x, z, baseSample, noCaveSample, this.denoiser_registry, this.denoiser_biomesource, (Climate.Sampler) this)); // transition
 			}
 		}
 	}

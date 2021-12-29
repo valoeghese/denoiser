@@ -24,8 +24,7 @@ public abstract class FuckNoiseCavesInParticular implements BiomeSourceAttacher 
 
 	@Inject(at = @At("RETURN"), cancellable = true, method = "calculateBaseNoise(IIILnet/minecraft/world/level/levelgen/TerrainInfo;Lnet/minecraft/world/level/levelgen/blending/Blender;)D")
 	private void modifyBaseNoise(int x, int y, int z, TerrainInfo terrainInfo, Blender blender, CallbackInfoReturnable<Double> info) {
-		// this better be in block coordinates
-
+		this.denoiser_biomesource.getNoiseBiome();
 	}
 
 	@Shadow

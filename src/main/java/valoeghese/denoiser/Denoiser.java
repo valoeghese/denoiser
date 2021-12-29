@@ -21,7 +21,7 @@ public class Denoiser implements ModInitializer {
 		int totalWeight = 0;
 		final int sampleY = 310 >> 2;
 
-		final int blendRadius = 3;
+		final int blendRadius = 2;
 		int qx = QuartPos.fromBlock(x);
 		int qz = QuartPos.fromBlock(z);
 
@@ -29,13 +29,15 @@ public class Denoiser implements ModInitializer {
 			int totalX = xo + qx;
 
 			for (int zo = -blendRadius; zo <= blendRadius; ++zo) {
-				ResourceKey<Biome> biome = biomeInfo.sampleBiome(totalX, sampleY, zo + qz);
+				if (xo * xo + zo * zo <= blendRadius * blendRadius) { // circular shape, reduce samples.
+					ResourceKey<Biome> biome = biomeInfo.sampleBiome(totalX, sampleY, zo + qz);
 
-				if (Denoiser.NO_NOISE_BIOMES.contains(biome)) {
-					++noCaveWeight;
+					if (Denoiser.NO_NOISE_BIOMES.contains(biome)) {
+						++noCaveWeight;
+					}
+
+					++totalWeight;
 				}
-
-				++totalWeight;
 			}
 		}
 

@@ -10,6 +10,7 @@ import net.minecraft.world.level.levelgen.NoiseSampler;
 import net.minecraft.world.level.levelgen.TerrainInfo;
 import net.minecraft.world.level.levelgen.blending.Blender;
 import net.minecraft.world.level.levelgen.synth.BlendedNoise;
+import net.minecraft.world.level.levelgen.synth.NormalNoise;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -19,6 +20,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import valoeghese.denoiser.BiomeSampler;
+import valoeghese.denoiser.ChunkAwareNoiseFiller;
 import valoeghese.denoiser.Denoiser;
 
 @Mixin(NoiseSampler.class)
@@ -58,19 +60,32 @@ public abstract class FuckNoiseCavesInParticular implements BiomeSampler {
 	@Shadow
 	abstract protected double calculateBaseNoise(int x, int y, int z, TerrainInfo terrainInfo, double d, boolean ignoreNoiseCaves, boolean bl2, Blender blender);
 
-	@Redirect(
-			method = "lambda$makeBaseNoiseFiller$10",
-			at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/levelgen/NoiseChunk$Sampler;sample()D", ordinal = 1)
+	/**
+	 * @reason inject here so we can sample on the interpolated points for far less lag
+	 */
+	@Inject(
+			method = "yLimitedInterpolatableNoise",
+			at = @At("HEAD"),
+			cancellable = true
 	)
-	private static double removeSomeNoodleCaves(NoiseChunk.Sampler instance, NoiseChunk.Sampler _1, NoiseChunk.Sampler _2, NoiseChunk.Sampler _3, NoiseChunk.Sampler _4, NoiseChunk.Sampler _5, NoiseChunk.NoiseFiller filler, NoiseChunk chunk, int x, int y, int z) {
-		double result = instance.sample();
+	private static void removeSomeNoodleCaves(NormalNoise normalNoise, int i, int j, int defaultValue, double frequency, CallbackInfoReturnable<NoiseChunk.InterpolatableNoise> info) {
+		if (defaultValue == -1) { // noodle toggle
+			ChunkAwareNoiseFiller noodleFilterableFiller = new ChunkAwareNoiseFiller((x, y, z, chunk) -> {
+				if (y <= j && y >= i) {
+					double result = normalNoise.getValue((double) x * frequency, (double) y * frequency, (double) z * frequency);
 
-		if (result >= 0.0) { // noodle cave
-			BiomeSampler sampler = (BiomeSampler) ((AccessorNoiseChunk) chunk).getSampler();
+					if (result >= 0.0) { // noodle cave
+						BiomeSampler sampler = (BiomeSampler) ((AccessorNoiseChunk) chunk).getSampler();
+						result = Denoiser.denoised(x, z, result, -0.2, (BiomeSampler) ((AccessorNoiseChunk) sampler).getSampler());
+					}
 
-			return Denoiser.denoised(x, z, result, -0.1, sampler);
-		} else {
-			return result;
+					return result;
+				} else {
+					return defaultValue;
+				}
+			});
+
+			info.setReturnValue(chunk -> ((AccessorNoiseChunk) chunk).callCreateNoiseInterpolator(noodleFilterableFiller.withChunk(chunk)));
 		}
 	}
 

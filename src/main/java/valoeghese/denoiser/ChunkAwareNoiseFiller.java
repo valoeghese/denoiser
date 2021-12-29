@@ -3,25 +3,25 @@ package valoeghese.denoiser;
 import net.minecraft.world.level.levelgen.NoiseChunk;
 
 public class ChunkAwareNoiseFiller implements NoiseChunk.NoiseFiller {
-	public ChunkAwareNoiseFiller(Sampler sampler) {
-		this.sampler = sampler;
+	public ChunkAwareNoiseFiller(NoiseSampler sampler) {
+		this.noiseSampler = sampler;
 	}
 
-	private Sampler sampler;
-	private NoiseChunk chunk;
+	private NoiseSampler noiseSampler;
+	private BiomeSampler biomeSampler;
 
-	public ChunkAwareNoiseFiller withChunk(NoiseChunk chunk) {
-		this.chunk = chunk;
+	public ChunkAwareNoiseFiller withBiomeSampler(BiomeSampler sampler) {
+		this.biomeSampler = sampler;
 		return this;
 	}
 
 	@Override
 	public double calculateNoise(int x, int y, int z) {
-		return this.sampler.sample(x, y, z, this.chunk);
+		return this.noiseSampler.sample(x, y, z, this.biomeSampler);
 	}
 
 	@FunctionalInterface
-	public interface Sampler {
-		double sample(int x, int y, int z, NoiseChunk chunk);
+	public interface NoiseSampler {
+		double sample(int x, int y, int z, BiomeSampler chunk);
 	}
 }

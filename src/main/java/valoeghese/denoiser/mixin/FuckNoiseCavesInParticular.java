@@ -17,7 +17,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import valoeghese.denoiser.BiomeSampler;
 import valoeghese.denoiser.ChunkAwareNoiseFiller;
@@ -70,13 +69,12 @@ public abstract class FuckNoiseCavesInParticular implements BiomeSampler {
 	)
 	private static void removeSomeNoodleCaves(NormalNoise normalNoise, int i, int j, int defaultValue, double frequency, CallbackInfoReturnable<NoiseChunk.InterpolatableNoise> info) {
 		if (defaultValue == -1) { // noodle toggle
-			ChunkAwareNoiseFiller noodleFilterableFiller = new ChunkAwareNoiseFiller((x, y, z, chunk) -> {
+			ChunkAwareNoiseFiller noodleFilterableFiller = new ChunkAwareNoiseFiller((x, y, z, biomeSampler) -> {
 				if (y <= j && y >= i) {
 					double result = normalNoise.getValue((double) x * frequency, (double) y * frequency, (double) z * frequency);
 
 					if (result >= 0.0) { // noodle cave
-						BiomeSampler sampler = (BiomeSampler) ((AccessorNoiseChunk) chunk).getSampler();
-						result = Denoiser.denoised(x, z, result, -0.2, (BiomeSampler) ((AccessorNoiseChunk) sampler).getSampler());
+						result = Denoiser.denoised(x, z, result, -0.2, biomeSampler);
 					}
 
 					return result;
@@ -85,7 +83,10 @@ public abstract class FuckNoiseCavesInParticular implements BiomeSampler {
 				}
 			});
 
-			info.setReturnValue(chunk -> ((AccessorNoiseChunk) chunk).callCreateNoiseInterpolator(noodleFilterableFiller.withChunk(chunk)));
+			info.setReturnValue(chunk -> {
+				AccessorNoiseChunk chunk_ = ((AccessorNoiseChunk) chunk);
+				return chunk_.callCreateNoiseInterpolator(noodleFilterableFiller.withBiomeSampler((BiomeSampler) chunk_.getSampler()));
+			});
 		}
 	}
 

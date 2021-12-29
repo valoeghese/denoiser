@@ -21,6 +21,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import valoeghese.denoiser.BiomeSampler;
+import valoeghese.denoiser.Denoiser;
 
 import java.util.function.Supplier;
 
@@ -54,7 +55,10 @@ public class MixinNoiseBasedChunkGenerator implements BiomeSampler {
 	 * @author Valoeghese
 	 * @reason Debug noise caves.
 	 */
-	@Overwrite
-	public void applyCarvers(WorldGenRegion worldGenRegion, long l, BiomeManager biomeManager, StructureFeatureManager structureFeatureManager, ChunkAccess chunkAccess, GenerationStep.Carving carving) {
+	@Inject(at = @At("HEAD"), method = "applyCarvers", cancellable = true)
+	public void disableCarversWhenDebugging(WorldGenRegion worldGenRegion, long l, BiomeManager biomeManager, StructureFeatureManager structureFeatureManager, ChunkAccess chunkAccess, GenerationStep.Carving carving, CallbackInfo info) {
+		if (Denoiser.REMOVE_CARVERS) {
+			info.cancel();
+		}
 	}
 }

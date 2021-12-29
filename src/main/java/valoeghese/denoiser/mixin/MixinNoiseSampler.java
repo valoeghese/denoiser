@@ -24,7 +24,7 @@ import valoeghese.denoiser.ChunkAwareNoiseFiller;
 import valoeghese.denoiser.Denoiser;
 
 @Mixin(NoiseSampler.class)
-public abstract class FuckNoiseCavesInParticular implements BiomeSampler {
+public abstract class MixinNoiseSampler implements BiomeSampler {
 	@Shadow
 	@Final
 	private BlendedNoise blendedNoise;
@@ -43,7 +43,7 @@ public abstract class FuckNoiseCavesInParticular implements BiomeSampler {
 			double baseSample = info.getReturnValue();
 			// 0.1 * is a strategic move here, as the output of this is *0.64 then clamped [-1,1] before doing stuff
 			// so it should limit the noise making smoothing improved while silently masking the result
-			// yeah this will break the perma-aquifer at -64 who cares
+			// yeah this will break the perma-aquifer at -64 somewhat... who cares
 			double noCaveSample = Mth.clamp(this.calculateBaseNoise(
 					x,
 					y,
@@ -55,7 +55,7 @@ public abstract class FuckNoiseCavesInParticular implements BiomeSampler {
 					blender), -1.0 / 0.64f, 1.0 / 0.64f);
 
 			if (baseSample != noCaveSample) { // only modify if we have to
-				info.setReturnValue(Denoiser.denoised(x, z, baseSample, noCaveSample, this, 3)); // transition
+				info.setReturnValue(Denoiser.denoised(x, z, baseSample, noCaveSample, this, 2)); // transition
 			}
 		}
 	}

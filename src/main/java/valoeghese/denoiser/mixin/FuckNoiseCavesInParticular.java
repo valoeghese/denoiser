@@ -2,6 +2,7 @@ package valoeghese.denoiser.mixin;
 
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.biome.Climate;
@@ -40,7 +41,10 @@ public abstract class FuckNoiseCavesInParticular implements BiomeSampler {
 	private void modifyBaseNoise(int x, int y, int z, TerrainInfo terrainInfo, Blender blender, CallbackInfoReturnable<Double> info) {
 		if (this.isNoiseCavesEnabled) {
 			double baseSample = info.getReturnValue();
-			double noCaveSample = this.calculateBaseNoise(
+			// 0.1 * is a strategic move here, as the output of this is *0.64 then clamped [-1,1] before doing stuff
+			// so it should limit the noise making smoothing improved while silently masking the result
+			// yeah this will break the perma-aquifer at -64 who cares
+			double noCaveSample = Mth.clamp(this.calculateBaseNoise(
 					x,
 					y,
 					z,
@@ -48,10 +52,10 @@ public abstract class FuckNoiseCavesInParticular implements BiomeSampler {
 					this.blendedNoise.calculateNoise(x, y, z),
 					true,
 					true,
-					blender);
+					blender), -1.0 / 0.64f, 1.0 / 0.64f);
 
 			if (baseSample != noCaveSample) { // only modify if we have to
-				info.setReturnValue(Denoiser.denoised(x, z, baseSample, noCaveSample, this)); // transition
+				info.setReturnValue(Denoiser.denoised(x, z, baseSample, noCaveSample, this, 3)); // transition
 			}
 		}
 	}
@@ -74,7 +78,7 @@ public abstract class FuckNoiseCavesInParticular implements BiomeSampler {
 					double result = normalNoise.getValue((double) x * frequency, (double) y * frequency, (double) z * frequency);
 
 					if (result >= 0.0) { // noodle cave
-						result = Denoiser.denoised(x, z, result, -0.2, biomeSampler);
+						result = Denoiser.denoised(x, z, result, -0.2, biomeSampler, 2);
 					}
 
 					return result;

@@ -16,15 +16,15 @@ public class Denoiser implements ModInitializer {
 	public static final Random RANDOM = new Random();
 	public static final Set<ResourceKey<Biome>> NO_NOISE_BIOMES = Set.of(Biomes.PLAINS, Biomes.SUNFLOWER_PLAINS, Biomes.SAVANNA, Biomes.SAVANNA_PLATEAU);
 
-	public static double denoised(int x, int z, double baseSample, double noCaveSample, BiomeSampler biomeInfo) {
+	public static double denoised(int x, int z, double baseSample, double noCaveSample, BiomeSampler biomeInfo, int blendRadius) {
 		int noCaveWeight = 0;
 		int totalWeight = 0;
 		final int sampleY = 310 >> 2;
 
-		final int blendRadius = 2;
 		int qx = QuartPos.fromBlock(x);
 		int qz = QuartPos.fromBlock(z);
 
+		// it samples this on quarts so this is safe
 		for (int xo = -blendRadius; xo <= blendRadius; ++xo) {
 			int totalX = xo + qx;
 

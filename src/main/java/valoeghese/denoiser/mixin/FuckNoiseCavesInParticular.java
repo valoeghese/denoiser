@@ -59,11 +59,11 @@ public abstract class FuckNoiseCavesInParticular implements BiomeInfoAttacher {
 	abstract protected double calculateBaseNoise(int x, int y, int z, TerrainInfo terrainInfo, double d, boolean ignoreNoiseCaves, boolean bl2, Blender blender);
 
 	@Redirect(
-			method = "makeBaseNoiseFiller",
+			method = "lambda$makeBaseNoiseFiller$10",
 			at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/levelgen/NoiseChunk$Sampler;sample()D", ordinal = 1)
 	)
-	private double fuckNoodleCavesToo(NoiseChunk.Sampler sampler) {
-		sampler.
+	private static double removeNoodleCaves(NoiseChunk.Sampler instance, NoiseChunk.Sampler _1, NoiseChunk.Sampler _2, NoiseChunk.Sampler _3, NoiseChunk.Sampler _4, NoiseChunk.Sampler _5, NoiseChunk.NoiseFiller filler, NoiseChunk chunk) {
+
 	}
 
 	@Override

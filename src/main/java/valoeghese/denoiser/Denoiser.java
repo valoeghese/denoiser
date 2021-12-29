@@ -44,6 +44,7 @@ public class Denoiser implements ModInitializer {
 		}
 
 		double trueNoCaveWeight = (double) noCaveWeight / (double) totalWeight;
+		if (trueNoCaveWeight > 0.99999) System.out.println(noCaveSample + " " + baseSample);
 		return noCaveSample * trueNoCaveWeight + baseSample * (1.0 - trueNoCaveWeight);
 	}
 

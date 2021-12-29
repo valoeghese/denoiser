@@ -1,6 +1,8 @@
 package valoeghese.denoiser.mixin;
 
 import net.minecraft.core.QuartPos;
+import net.minecraft.core.Registry;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.biome.Climate;
 import net.minecraft.world.level.levelgen.NoiseSampler;
@@ -28,6 +30,8 @@ public abstract class FuckNoiseCavesInParticular implements BiomeSourceAttacher 
 
 	@Unique
 	private BiomeSource denoiser_biomesource;
+	@Unique
+	private Registry<Biome> denoiser_registry; // just in case multithreading madness
 
 	@Inject(at = @At("RETURN"), cancellable = true, method = "calculateBaseNoise(IIILnet/minecraft/world/level/levelgen/TerrainInfo;Lnet/minecraft/world/level/levelgen/blending/Blender;)D")
 	private void modifyBaseNoise(int x, int y, int z, TerrainInfo terrainInfo, Blender blender, CallbackInfoReturnable<Double> info) {
@@ -56,7 +60,9 @@ public abstract class FuckNoiseCavesInParticular implements BiomeSourceAttacher 
 					int totalX = xo + qx;
 
 					for (int zo = -searchRad; zo <= searchRad; ++zo) {
-						if (Denoiser.NO_NOISE_BIOMES.contains(this.denoiser_biomesource.getNoiseBiome(totalX, sampleY, zo + qz, (Climate.Sampler) this))) {
+						if (Denoiser.NO_NOISE_BIOMES.contains(
+								this.denoiser_registry.getKey(this.denoiser_biomesource.getNoiseBiome(totalX, sampleY, zo + qz, (Climate.Sampler) this))
+						)) {
 							++noCaveWeight;
 						}
 
@@ -74,7 +80,12 @@ public abstract class FuckNoiseCavesInParticular implements BiomeSourceAttacher 
 	abstract protected double calculateBaseNoise(int x, int y, int z, TerrainInfo terrainInfo, double d, boolean ignoreNoiseCaves, boolean bl2, Blender blender);
 
 	@Override
-	public void attach(BiomeSource source) {
+	public void attachBiomeSource(BiomeSource source) {
 		this.denoiser_biomesource = source;
+	}
+
+	@Override
+	public void attachRegistry(Registry<Biome> levelRegistry) {
+		if (this.denoiser_registry == null) this.denoiser_registry = levelRegistry;
 	}
 }

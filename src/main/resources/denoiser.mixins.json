@@ -4,6 +4,7 @@
   "package": "valoeghese.denoiser.mixin",
   "compatibilityLevel": "JAVA_16",
   "mixins": [
+    "AccessorNoiseChunk",
     "FuckNoiseCavesInParticular",
     "MixinNoiseBasedChunkGenerator",
     "MixinServerLevel"

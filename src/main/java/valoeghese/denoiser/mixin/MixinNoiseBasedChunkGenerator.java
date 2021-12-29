@@ -1,6 +1,7 @@
 package valoeghese.denoiser.mixin;
 
 import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.world.level.StructureFeatureManager;
 import net.minecraft.world.level.biome.Biome;
@@ -19,19 +20,19 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import valoeghese.denoiser.BiomeInfoAttacher;
+import valoeghese.denoiser.BiomeSampler;
 
 import java.util.function.Supplier;
 
 @Mixin(NoiseBasedChunkGenerator.class)
-public class MixinNoiseBasedChunkGenerator implements BiomeInfoAttacher {
+public class MixinNoiseBasedChunkGenerator implements BiomeSampler {
 	@Shadow
 	@Final
 	private NoiseSampler sampler;
 
 	@Inject(at = @At("RETURN"), method = "<init>(Lnet/minecraft/core/Registry;Lnet/minecraft/world/level/biome/BiomeSource;Lnet/minecraft/world/level/biome/BiomeSource;JLjava/util/function/Supplier;)V")
 	private void attachBiomeSource(Registry<NormalNoise.NoiseParameters> registry, BiomeSource biomeSource, BiomeSource biomeSource2, long l, Supplier<NoiseGeneratorSettings> supplier, CallbackInfo ci) {
-		((BiomeInfoAttacher) this.sampler).attachBiomeSource(biomeSource);
+		((BiomeSampler) this.sampler).attachBiomeSource(biomeSource);
 	}
 
 	@Override
@@ -41,7 +42,12 @@ public class MixinNoiseBasedChunkGenerator implements BiomeInfoAttacher {
 
 	@Override
 	public void attachRegistry(Registry<Biome> biomeRegistry) {
-		((BiomeInfoAttacher) this.sampler).attachRegistry(biomeRegistry);
+		((BiomeSampler) this.sampler).attachRegistry(biomeRegistry);
+	}
+
+	@Override
+	public ResourceKey<Biome> sampleBiome(int qx, int qy, int qz) {
+		return ((BiomeSampler) this.sampler).sampleBiome(qx, qy, qz);
 	}
 
 	/**

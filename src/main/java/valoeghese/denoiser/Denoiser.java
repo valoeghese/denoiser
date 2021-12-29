@@ -2,12 +2,9 @@ package valoeghese.denoiser;
 
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.core.QuartPos;
-import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.biome.Biomes;
-import net.minecraft.world.level.biome.Climate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -19,7 +16,7 @@ public class Denoiser implements ModInitializer {
 	public static final Random RANDOM = new Random();
 	public static final Set<ResourceKey<Biome>> NO_NOISE_BIOMES = Set.of(Biomes.PLAINS, Biomes.SUNFLOWER_PLAINS, Biomes.SAVANNA, Biomes.SAVANNA_PLATEAU);
 
-	public static double denoised(int x, int z, double baseSample, double noCaveSample, Registry<Biome> registry, BiomeSource biomeSource, Climate.Sampler sampler) {
+	public static double denoised(int x, int z, double baseSample, double noCaveSample, BiomeSampler biomeInfo) {
 		int noCaveWeight = 0;
 		int totalWeight = 0;
 		final int sampleY = 310 >> 2;
@@ -32,7 +29,7 @@ public class Denoiser implements ModInitializer {
 			int totalX = xo + qx;
 
 			for (int zo = -blendRadius; zo <= blendRadius; ++zo) {
-				ResourceKey<Biome> biome = registry.getResourceKey(biomeSource.getNoiseBiome(totalX, sampleY, zo + qz, sampler)).get();
+				ResourceKey<Biome> biome = biomeInfo.sampleBiome(totalX, sampleY, zo + qz);
 
 				if (Denoiser.NO_NOISE_BIOMES.contains(biome)) {
 					++noCaveWeight;

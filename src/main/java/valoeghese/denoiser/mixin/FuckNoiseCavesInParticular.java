@@ -1,7 +1,7 @@
 package valoeghese.denoiser.mixin;
 
-import net.minecraft.core.QuartPos;
 import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.biome.Climate;
@@ -18,11 +18,11 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import valoeghese.denoiser.BiomeInfoAttacher;
+import valoeghese.denoiser.BiomeSampler;
 import valoeghese.denoiser.Denoiser;
 
 @Mixin(NoiseSampler.class)
-public abstract class FuckNoiseCavesInParticular implements BiomeInfoAttacher {
+public abstract class FuckNoiseCavesInParticular implements BiomeSampler {
 	@Shadow
 	@Final
 	private BlendedNoise blendedNoise;
@@ -49,9 +49,9 @@ public abstract class FuckNoiseCavesInParticular implements BiomeInfoAttacher {
 					true,
 					blender);
 
-			//if (baseSample != noCaveSample) { // only modify if we have to
-				info.setReturnValue(Denoiser.denoised(x, z, baseSample, noCaveSample, this.denoiser_registry, this.denoiser_biomesource, (Climate.Sampler) this)); // transition
-			//}
+			if (baseSample != noCaveSample) { // only modify if we have to
+				info.setReturnValue(Denoiser.denoised(x, z, baseSample, noCaveSample, this)); // transition
+			}
 		}
 	}
 
@@ -62,8 +62,16 @@ public abstract class FuckNoiseCavesInParticular implements BiomeInfoAttacher {
 			method = "lambda$makeBaseNoiseFiller$10",
 			at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/levelgen/NoiseChunk$Sampler;sample()D", ordinal = 1)
 	)
-	private static double removeNoodleCaves(NoiseChunk.Sampler instance, NoiseChunk.Sampler _1, NoiseChunk.Sampler _2, NoiseChunk.Sampler _3, NoiseChunk.Sampler _4, NoiseChunk.Sampler _5, NoiseChunk.NoiseFiller filler, NoiseChunk chunk) {
+	private static double removeSomeNoodleCaves(NoiseChunk.Sampler instance, NoiseChunk.Sampler _1, NoiseChunk.Sampler _2, NoiseChunk.Sampler _3, NoiseChunk.Sampler _4, NoiseChunk.Sampler _5, NoiseChunk.NoiseFiller filler, NoiseChunk chunk, int x, int y, int z) {
+		double result = instance.sample();
 
+		if (result >= 0.0) { // noodle cave
+			BiomeSampler sampler = (BiomeSampler) ((AccessorNoiseChunk) chunk).getSampler();
+
+			return Denoiser.denoised(x, z, result, -0.1, sampler);
+		} else {
+			return result;
+		}
 	}
 
 	@Override
@@ -74,5 +82,10 @@ public abstract class FuckNoiseCavesInParticular implements BiomeInfoAttacher {
 	@Override
 	public void attachRegistry(Registry<Biome> biomeRegistry) {
 		if (this.denoiser_registry == null) this.denoiser_registry = biomeRegistry;
+	}
+
+	@Override
+	public ResourceKey<Biome> sampleBiome(int qx, int qy, int qz) {
+		return this.denoiser_registry.getResourceKey(this.denoiser_biomesource.getNoiseBiome(qx, qy, qz, (Climate.Sampler) this)).get();
 	}
 }

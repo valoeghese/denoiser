@@ -16,11 +16,11 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import valoeghese.denoiser.BiomeSourceAttacher;
+import valoeghese.denoiser.BiomeInfoAttacher;
 import valoeghese.denoiser.Denoiser;
 
 @Mixin(NoiseSampler.class)
-public abstract class FuckNoiseCavesInParticular implements BiomeSourceAttacher {
+public abstract class FuckNoiseCavesInParticular implements BiomeInfoAttacher {
 	@Shadow
 	@Final
 	private BlendedNoise blendedNoise;
@@ -85,7 +85,7 @@ public abstract class FuckNoiseCavesInParticular implements BiomeSourceAttacher 
 	}
 
 	@Override
-	public void attachRegistry(Registry<Biome> levelRegistry) {
-		if (this.denoiser_registry == null) this.denoiser_registry = levelRegistry;
+	public void attachRegistry(Registry<Biome> biomeRegistry) {
+		if (this.denoiser_registry == null) this.denoiser_registry = biomeRegistry;
 	}
 }

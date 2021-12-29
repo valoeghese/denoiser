@@ -5,6 +5,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.biome.Climate;
+import net.minecraft.world.level.levelgen.NoiseChunk;
 import net.minecraft.world.level.levelgen.NoiseSampler;
 import net.minecraft.world.level.levelgen.TerrainInfo;
 import net.minecraft.world.level.levelgen.blending.Blender;
@@ -15,6 +16,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import valoeghese.denoiser.BiomeInfoAttacher;
 import valoeghese.denoiser.Denoiser;
@@ -47,14 +49,22 @@ public abstract class FuckNoiseCavesInParticular implements BiomeInfoAttacher {
 					true,
 					blender);
 
-			if (baseSample != noCaveSample) { // only modify if we have to
+			//if (baseSample != noCaveSample) { // only modify if we have to
 				info.setReturnValue(Denoiser.denoised(x, z, baseSample, noCaveSample, this.denoiser_registry, this.denoiser_biomesource, (Climate.Sampler) this)); // transition
-			}
+			//}
 		}
 	}
 
 	@Shadow
 	abstract protected double calculateBaseNoise(int x, int y, int z, TerrainInfo terrainInfo, double d, boolean ignoreNoiseCaves, boolean bl2, Blender blender);
+
+	@Redirect(
+			method = "makeBaseNoiseFiller",
+			at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/levelgen/NoiseChunk$Sampler;sample()D", ordinal = 1)
+	)
+	private double fuckNoodleCavesToo(NoiseChunk.Sampler sampler) {
+		sampler.
+	}
 
 	@Override
 	public void attachBiomeSource(BiomeSource source) {

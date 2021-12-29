@@ -20,32 +20,30 @@ public class Denoiser implements ModInitializer {
 	public static final Set<ResourceKey<Biome>> NO_NOISE_BIOMES = Set.of(Biomes.PLAINS, Biomes.SUNFLOWER_PLAINS, Biomes.SAVANNA, Biomes.SAVANNA_PLATEAU);
 
 	public static double denoised(int x, int z, double baseSample, double noCaveSample, Registry<Biome> registry, BiomeSource biomeSource, Climate.Sampler sampler) {
-//		int noCaveWeight = 0;
-//		int totalWeight = 0;
-//		final int sampleY = 310 >> 2;
-//
-//		final int searchRad = 3;
-//		int qx = QuartPos.fromBlock(x);
-//		int qz = QuartPos.fromBlock(z);
-//
-//		for (int xo = -searchRad; xo <= searchRad; ++xo) {
-//			int totalX = xo + qx;
-//
-//			for (int zo = -searchRad; zo <= searchRad; ++zo) {
-//				ResourceKey<Biome> biome = registry.getResourceKey(biomeSource.getNoiseBiome(totalX, sampleY, zo + qz, sampler)).get();
-//
-//				if (Denoiser.NO_NOISE_BIOMES.contains(biome)) {
-////					System.out.println("nocave biome");
-//					++noCaveWeight;
-//				}
-//
-//				++totalWeight;
-//			}
-//		}
-//
-//		double trueNoCaveWeight = (double) noCaveWeight / (double) totalWeight;
-		//if (trueNoCaveWeight > 0.99999) System.out.println(noCaveSample + " " + baseSample);
-		return noCaveSample;//noCaveSample * trueNoCaveWeight + baseSample * (1.0 - trueNoCaveWeight);
+		int noCaveWeight = 0;
+		int totalWeight = 0;
+		final int sampleY = 310 >> 2;
+
+		final int blendRadius = 3;
+		int qx = QuartPos.fromBlock(x);
+		int qz = QuartPos.fromBlock(z);
+
+		for (int xo = -blendRadius; xo <= blendRadius; ++xo) {
+			int totalX = xo + qx;
+
+			for (int zo = -blendRadius; zo <= blendRadius; ++zo) {
+				ResourceKey<Biome> biome = registry.getResourceKey(biomeSource.getNoiseBiome(totalX, sampleY, zo + qz, sampler)).get();
+
+				if (Denoiser.NO_NOISE_BIOMES.contains(biome)) {
+					++noCaveWeight;
+				}
+
+				++totalWeight;
+			}
+		}
+
+		double trueNoCaveWeight = (double) noCaveWeight / (double) totalWeight;
+		return noCaveSample * trueNoCaveWeight + baseSample * (1.0 - trueNoCaveWeight);
 	}
 
 	@Override

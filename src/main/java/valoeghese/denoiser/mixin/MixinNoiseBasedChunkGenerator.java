@@ -38,7 +38,7 @@ public class MixinNoiseBasedChunkGenerator implements BiomeSampler {
 
 	@Override
 	public void attachBiomeSource(BiomeSource source) {
-		throw new UnsupportedOperationException("Cannot attach a biome source to a chunk generator using BiomeInfoAttacher!");
+		throw new UnsupportedOperationException("Cannot attach a biome source to a chunk generator using BiomeSampler!");
 	}
 
 	@Override

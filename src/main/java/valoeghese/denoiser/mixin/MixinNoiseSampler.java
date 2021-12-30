@@ -41,10 +41,10 @@ public abstract class MixinNoiseSampler implements BiomeSampler {
 	private void modifyBaseNoise(int x, int y, int z, TerrainInfo terrainInfo, Blender blender, CallbackInfoReturnable<Double> info) {
 		if (this.isNoiseCavesEnabled) {
 			double baseSample = info.getReturnValue();
-			// 0.1 * is a strategic move here, as the output of this is *0.64 then clamped [-1,1] before doing stuff
+			// This clamp is a strategic move here, as the output of this is *0.64 then clamped [-1,1] before doing stuff
 			// so it should limit the noise making smoothing improved while silently masking the result
-			// yeah this will break the perma-aquifer at -64 somewhat... who cares
-			double noCaveSample = Mth.clamp(this.calculateBaseNoise(
+			// yeah this will break something in the aquifer in these areas but idk what
+			double noCaveSample = this.calculateBaseNoise(
 					x,
 					y,
 					z,
@@ -52,10 +52,10 @@ public abstract class MixinNoiseSampler implements BiomeSampler {
 					this.blendedNoise.calculateNoise(x, y, z),
 					true,
 					true,
-					blender), -1.0 / 0.64f, 1.0 / 0.64f);
+					blender);
 
 			if (baseSample != noCaveSample) { // only modify if we have to
-				info.setReturnValue(Denoiser.denoised(x, z, baseSample, noCaveSample, this, 2)); // transition
+				info.setReturnValue(Denoiser.denoised(x, z, baseSample, Mth.clamp(noCaveSample, -1.0 / 0.64, 1.0 / 0.64), this, 2)); // transition
 			}
 		}
 	}

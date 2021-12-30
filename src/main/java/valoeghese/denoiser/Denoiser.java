@@ -7,6 +7,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import valoeghese.denoiser.newbiome.TestBiomes;
 
 import java.util.Random;
 import java.util.Set;
@@ -15,6 +16,8 @@ public class Denoiser implements ModInitializer {
 	public static final Logger LOGGER = LogManager.getLogger("denoiser");
 	public static final Random RANDOM = new Random();
 	public static final Set<ResourceKey<Biome>> NO_NOISE_BIOMES = Set.of(Biomes.PLAINS, Biomes.SUNFLOWER_PLAINS, Biomes.SAVANNA, Biomes.SAVANNA_PLATEAU);
+
+	// Options
 	public static final boolean REMOVE_CARVERS = false;
 
 	public static double denoised(int x, int z, double baseSample, double noCaveSample, BiomeSampler biomeInfo, int blendRadius) {
@@ -49,6 +52,7 @@ public class Denoiser implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		LOGGER.info(funnyMessage[RANDOM.nextInt(funnyMessage.length - 1)]);
+		TestBiomes.registerBiome();
 	}
 
 	private static String[] funnyMessage = {

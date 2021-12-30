@@ -14,7 +14,7 @@
   },
 
   "license": "Crayon License see repository",
-  "icon": "assets/modid/icon.png",
+  "icon": "assets/denoiser/icon.png",
 
   "environment": "*",
   "entrypoints": {

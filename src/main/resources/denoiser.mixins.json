@@ -7,7 +7,9 @@
     "AccessorNoiseChunk",
     "MixinNoiseSampler",
     "MixinNoiseBasedChunkGenerator",
-    "MixinServerLevel"
+    "MixinServerLevel",
+    "MixinCreeper",
+    "MixinSpawnEgg"
   ],
   "client": [
   ],
